@@ -77,7 +77,7 @@ def TSS(my_lines, threshold):
         else:
             if y not in template_numbers:
                 # print('STANDALONE STRING')
-                loners.append(y)
+                loners.append(lines[y])
             friends_list.append('nan')
             nfriends.append(0)
             done.append(y)
@@ -157,32 +157,33 @@ def TSS(my_lines, threshold):
             clusters[maxk].append(line_number)
             postclustered.append(line_number)
         else:
-            loners.append(line_number)
+            loners.append(lines[line_number])
             print('why?', line_number, df['-friends-'][line_number], 'friends', ) #try to fix this too
 
     # clusters['loners'] = loners #appends loners to all clusters
     clusters['шаблоны'] = template_numbers #also appends templates
 
     print('postclustered', len(postclustered))
-    print('loners', len(loners))
+    print('loners', loners)
     print('clusters ', clusters)
     print('number of clusters', len(clusters))
     print('purgery', purgery)
 
-    directory = os.path.join('clusters', key_filename.strip('.txt'))
+    directory = os.path.join('clustered', key_filename.strip('.txt'), 'clusters')  # where clusters go
+    directory2 = os.path.join('clustered', key_filename.strip('.txt'))  # where loners go
     os.makedirs(directory, exist_ok=True)
     for name in clusters:
-        with open(os.path.join(directory, 'clusters', name + '.txt'), 'w', encoding='utf-8') as file:
+        with open(os.path.join(directory, name + '.txt'), 'w', encoding='utf-8') as file:
             for line in clusters[name]:
                 file.write(lines[line])
-    with open(os.path.join(directory, 'loners.txt'), 'w', encoding='utf-8') as lonerfile:
+    with open(os.path.join(directory2, 'loners.txt'), 'w', encoding='utf-8') as lonerfile:
         for i in loners:
-            lonerfile.write(lines[i])
+            lonerfile.write(i)
     excel_copy_write.xl(clusters, loners, key_filename)
     return 0
 
 threshold = 4
-key_filename = 'million_lines.txt'
+key_filename = 'key_phrases.txt'
 with open(key_filename, 'r', encoding='utf-8') as key:
     my_lines = key.readlines()[:10000]
     TSS(my_lines, threshold)
