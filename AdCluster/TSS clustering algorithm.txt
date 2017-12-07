@@ -1,0 +1,42 @@
+How my Maximum Similarity Clustering works:
+
+0. Establish similarity threshold
+
+1. Remove all words with <(=)2 occurences in text from the task (that's if we dont really need 2-bit clusters; we may cut them and then add them for post-processing, anyways)
+
+2. For every line find a set of lines with maximum similarity. For this, we use the word/document matrix:
+
+ take the submatrix with all the words occuring in the line in question, and check for lines with maximum sum (top similarity score, TSS): they are our 'friends'
+ 
+3. We arrange the lines by biggest TSS (within the same-score groups, we range them by, say, length)*
+
+4. For every given line (henceforth referred to as 'L0') for each of its 'friends' (L1) we check if the TSS relation is mutual (do we need it though?)***:
+
+   [TSS (L0, L1) & TSS (L1, L0)]
+
+5. If (4), we put them into one cluster;
+
+   If not (4), we reject L1.
+   
+6. We delete clustered lines from the text and from the TSS chart
+
+7. Repeat procedure from step 4 until TSS <= threshold
+
+8. The Residue Problem can also be solved elegantly. Since every cluster is defined by a set of common words, and similarity above the threshold satisfies us:
+
+For every line in the residue we check, with which set of words its similarity is maximum. If MaxSim is above threshold, we add it to random (smallest) cluster 
+
+with such MaxSim. If not, leave the poor thing be, it cannot be helped any.
+
+
+*Highest TSS line will have to give us a 'yes'** . If we begin with not_max TSS, we might have to run up an inconvenient path of increasing TSS.
+
+**or  a 'maybe' if it has multiple TSS patterns. Actualy, if the l0 has more than 1 TSS pattern, we might have to consider which one to choose)
+
+***L1 cannot NOT have L0 as its TSS line, right? i mean, SS(a,b)= SS(b,a). We might want to play with TSS list of a line if we want to balance the size of the clusters
+
+or if we have to consider additional information (i.e., len(TS substring)/len(line)) or TSS with added word weights(whether so?).  
+
+from here to templates:
+next task:
+Cluster the key phrases so that there will be <=35-char-long sequences at a fixed place in the phrase which can be replaced by #templates#, and the rest would be as similar as possible
