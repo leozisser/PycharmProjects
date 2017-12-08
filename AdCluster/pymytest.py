@@ -5,7 +5,7 @@ import os
 import re
 import time
 import excel_copy_write
-
+from foldercrawler import path2lines
 # text = open ('template.txt', 'r', encoding='utf-8')
 # lines = text.readlines()
 # df = pd.DataFrame({'A': [1, 1, 1, 1,1],
@@ -14,6 +14,19 @@ import excel_copy_write
 #                    'D': [0, 0, 1, 0,1]})
 # print(df)
 start_time = time.time()
+
+
+def file2lines(folder):
+
+    '''if not folder:
+    if extension == .xls: do xls
+    if extension == txt:
+    readlines()
+    if folder:
+    for i in folder:
+    do xls.
+    lines.extend(do folder(i))'''
+    return 0
 
 def re_sub(strings):
     good = [re.sub('^y ','', s)for s in strings]
@@ -88,9 +101,6 @@ def TSS(my_lines, threshold):
     df['~nfriends'] = nfriends
     df = df[df['~nfriends'] != 0]
     df = df.sort_values(['tss', '~nfriends'], ascending=[0, 0])
-    # df['-friends-'] = friends_list
-    # print(df)
-
 
     for indexx, row in df.iterrows():  # better create df where everyone has friends and then iterate over it
         if indexx not in done:
@@ -122,16 +132,16 @@ def TSS(my_lines, threshold):
                     # print('cluster', cluster)
                 else:
                     if not friends_alive:  # line has no unclustered friends
-                        print('my friends are dead')
-                        print('monocluster, goes to purgery', cluster)
+                        # print('my friends are dead')
+                        # print('monocluster, goes to purgery', cluster)
                         purgery.append(indexx)
                     else:
                         cluster.append(friends_alive[-1])  # gets friend that is alive and has minimum friends
-                        print('cluster', cluster)
+                        # print('cluster', cluster)
 
                 if len(cluster) > 1:
                     cluster_name = ' '.join([i for i in set(l[cluster[0]]).intersection(l[cluster[1]]) if i != 'nan'])
-                    print(cluster_name)
+                    # print(cluster_name)
                     clusters[cluster_name] = cluster
                     done.append(indexx)
 
@@ -149,9 +159,11 @@ def TSS(my_lines, threshold):
     for line_number in purgery:
         lemmas = [i for i in l[line_number]if i != 'nan'] #here maybe include non-significant words
         d = {}
+        cnt = 0
         for name in clusters:
             k = len(set(lemmas).intersection([i for i in name.split(' ')]))
             d[name] = k
+            cnt += 1
         maxk = max(d, key=d.get)
         if d[maxk] >= threshold:
             clusters[maxk].append(line_number)
@@ -164,7 +176,7 @@ def TSS(my_lines, threshold):
     clusters['шаблоны'] = template_numbers #also appends templates
 
     print('postclustered', len(postclustered))
-    print('loners', loners)
+    print('loners', len(loners))
     print('clusters ', clusters)
     print('number of clusters', len(clusters))
     print('purgery', purgery)
@@ -183,9 +195,13 @@ def TSS(my_lines, threshold):
     return 0
 
 threshold = 4
-key_filename = 'key_phrases.txt'
-with open(key_filename, 'r', encoding='utf-8') as key:
-    my_lines = key.readlines()[:10000]
-    TSS(my_lines, threshold)
+key_filename = 'временная регистрация'
+# with open(key_filename, 'r', encoding='utf-8') as key:
+#     my_lines = key.readlines()[:10000]
+#     TSS(my_lines, threshold)
+
+my_lines = path2lines(key_filename)
+TSS(my_lines, threshold)
+
 print("--- %s seconds ---" % (time.time() - start_time))
 

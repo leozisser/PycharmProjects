@@ -1,7 +1,5 @@
-from unidecode import unidecode
 import os
 import xlrd
-
 
 
 def file_or_folder(name):
