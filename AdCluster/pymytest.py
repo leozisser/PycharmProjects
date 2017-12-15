@@ -6,27 +6,9 @@ import re
 import time
 import excel_copy_write
 from foldercrawler import path2lines
-# text = open ('template.txt', 'r', encoding='utf-8')
-# lines = text.readlines()
-# df = pd.DataFrame({'A': [1, 1, 1, 1,1],
-#                    'B': [1, 1, 0, 1,1],
-#                    'C': [0, 0, 0, 1,1],
-#                    'D': [0, 0, 1, 0,1]})
-# print(df)
+
 start_time = time.time()
 
-
-def file2lines(folder):
-
-    '''if not folder:
-    if extension == .xls: do xls
-    if extension == txt:
-    readlines()
-    if folder:
-    for i in folder:
-    do xls.
-    lines.extend(do folder(i))'''
-    return 0
 
 def re_sub(strings):
     good = [re.sub('^y ','', s)for s in strings]
@@ -42,8 +24,7 @@ def loser(dff, listt):
     return a
 
 
-
-def TSS(my_lines, threshold):
+def TSS(key_filename, my_lines, threshold):
     res = [i for i in morphy_variant.get_matrix(my_lines, threshold)] #sends threshold to get_matrix where non-sgnificant columns are cut off
     lines = re_sub(res[1])
     df = res[0]
@@ -194,14 +175,14 @@ def TSS(my_lines, threshold):
     excel_copy_write.xl(clusters, loners, key_filename)
     return 0
 
-threshold = 4
-key_filename = 'временная регистрация'
-# with open(key_filename, 'r', encoding='utf-8') as key:
-#     my_lines = key.readlines()[:10000]
-#     TSS(my_lines, threshold)
 
-my_lines = path2lines(key_filename)
-TSS(my_lines, threshold)
+def execute(key_pathname, threshold):
+    key_filename = (os.path.basename(key_pathname))
+    my_lines = path2lines(key_pathname)
+    TSS(key_filename, my_lines, threshold)
+
+pathname = 'C:\\Users\\ziswi\\PycharmProjects\\AdCluster\\временная регистрация'
+execute(pathname, threshold=4)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 

@@ -45,7 +45,7 @@ def path2lines(folder):
         file2lines(folder, lines)
 
     return lines
-print(len(path2lines('временная регистрация')))
+# print(len(path2lines('временная регистрация')))
 
 
 
