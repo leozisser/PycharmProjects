@@ -181,7 +181,7 @@ def execute(key_pathname, threshold):
     my_lines = path2lines(key_pathname)
     TSS(key_filename, my_lines, threshold)
 
-pathname = 'C:\\Users\\ziswi\\PycharmProjects\\AdCluster\\временная регистрация'
+pathname = 'C:\\Users\\ziswi\\Downloads\\ключи\\АНО\\АНО\\ано зарегистрировать\\ano_zaregistrirovat_e7bdc.csv'
 execute(pathname, threshold=4)
 
 print("--- %s seconds ---" % (time.time() - start_time))

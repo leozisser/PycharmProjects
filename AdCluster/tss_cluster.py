@@ -6,7 +6,7 @@ import re
 import time
 import excel_copy_write
 from foldercrawler import path2lines
-
+import statistics
 start_time = time.time()
 
 
@@ -48,7 +48,10 @@ def TSS(key_filename, my_lines, threshold, xlw):
         # index_list.append(y)
         # print('processing row: ',y)
         # print('this line: ', l[y])
-        eigen_matrix = (df.drop(y)[x[x!='nan']])  # create submatrix
+        try:
+            eigen_matrix = (df.drop(y)[x[x!='nan']])  # create submatrix
+        except ValueError:
+            eigen_matrix = df
         eigen_matrix['summa'] = eigen_matrix.sum(axis=1)
         # eigen_list.append(eigen_matrix)  # append sum column
         # print(eigen_matrix)
@@ -161,42 +164,71 @@ def TSS(key_filename, my_lines, threshold, xlw):
     print('clusters ', clusters)
     print('number of clusters', len(clusters))
     print('purgery', purgery)
-
-    directory = os.path.join('clustered', key_filename.strip('.txt'), 'clusters')  # where clusters go
-    directory2 = os.path.join('clustered', key_filename.strip('.txt'))  # where loners go
+    filename = os.path.basename(key_filename)
+    directory2 = os.path.join('clustered', key_filename.strip('.txls'))  # where loners go
+    directory = os.path.join('clustered', key_filename.strip('.txls'), 'clusters')  # where clusters go
     os.makedirs(directory, exist_ok=True)
+    lens = []
     for name in clusters:
-        with open(os.path.join(directory, name + '.txt'), 'w', encoding='utf-8') as file:
-            for line in clusters[name]:
-                file.write(lines[line])
+        lens.append(len(clusters[name]))
+        # with open(os.path.join(directory, name + '.txt'), 'w', encoding='utf-8') as file:
+    #         for line in clusters[name]:
+    #             file.write(lines[line] + "\n")
     with open(os.path.join(directory2, 'loners.txt'), 'w', encoding='utf-8') as lonerfile:
         for i in loners:
             lonerfile.write(i)
+    with open(os.path.join(directory2, 'шаблоны.txt'), 'w', encoding='utf-8') as template_file:
+        for i in template_numbers:
+            template_file.write(lines[i] + '\n')
+    m = statistics.mean(lens)
+    mm = statistics.median(lens)
+    print('mean/median cluster length: ', m, mm)
     if xlw:
-        excel_copy_write.xl(clusters, loners, key_filename)
+        excel_copy_write.xl(clusters, loners, key_filename, lines)
     return 0
 
 
-def execute(key_pathname, threshold):
-    key_filename = (os.path.basename(key_pathname))
+def batch_by_batch(key_pathname, threshold, batch_size, xlw):
+    key_filename = os.path.basename(key_pathname)
     my_lines = path2lines(key_pathname)
-    TSS(key_filename, my_lines, threshold, xlw=1)
+    cnt = 1
+    iterno = len(my_lines)// batch_size +1
+    print(len(my_lines))
+    print('iterno', iterno)
+    while cnt <= iterno:
+        lines = my_lines[batch_size*(cnt-1): batch_size*cnt]
+        TSS(key_pathname + str(cnt), lines, threshold, xlw=xlw)
+        cnt += 1
 
-# pathname = 'C:\\Users\\ziswi\\PycharmProjects\\AdCluster\\временная регистрация'
+
+def execute(key_pathname, threshold):
+    if os.path.isdir(key_pathname):
+        for d in os.listdir(key_pathname):
+            key_filename = os.path.basename(key_pathname)
+            print('file', d)
+            path = os.path.join(key_pathname, d)
+            print('path', path)
+            my_lines = path2lines(path)
+            # TSS(os.path.join(key_filename, d), my_lines, threshold, xlw=1)
+            print('len file', len(my_lines))
+            if len(my_lines) <= 10000:
+                TSS(os.path.join(key_filename, d), my_lines, threshold, xlw=1)
+            else:
+                print('batching')
+                batch_by_batch(os.path.join(key_pathname, d), threshold=threshold, batch_size=10000, xlw=1)
+    elif os.path.isfile(key_pathname):
+        key_filename = os.path.basename(key_pathname)
+        my_lines = path2lines(key_filename)
+        TSS(key_filename,my_lines, threshold, xlw=1)
+
+
+
+# pathname = 'C:\\Users\\ziswi\\PycharmProjects\\AdCluster\\регистрация в москве купить.txt'
 # execute(pathname, threshold=4)
 
 
-def batch_by_batch(key_pathname, threshold, batch_size, iterno):
-    key_filename = (os.path.basename(key_pathname))
-    my_lines = path2lines(key_pathname)
-    cnt = 1
-    k = batch_size
-    while cnt <= iterno:
-        lines = my_lines[batch_size*(cnt-1): batch_size*cnt]
-        TSS(key_filename, lines, threshold, xlw=False)
-        cnt += 1
 
-batch_by_batch('million_lines\\million_lines.txt', batch_size=1000, iterno=9, threshold=4)
+# batch_by_batch(pathname, batch_size=7000, threshold=4, xlw=1)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 
